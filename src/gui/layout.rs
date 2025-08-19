@@ -1,23 +1,25 @@
+use std::collections::HashMap;
+use std::time::Duration;
+use iced::widget::{column, container, row, text, Space, rule};
+use iced::{window, Element, Length, Subscription, Task};
+use crate::gui::left_navigation::left_navigation::{LeftNavigation, LeftNavigationMessage};
+use crate::gui::top_navigation::top_navigation::{TopNavigation, TopNavigationMessage};
 
-use iced::widget::{column, container, row, text,  Space, rule};
-use iced::{Element,  Length};
-use crate::gui::left::left_navigation::{LeftNavigation, LeftNavigationMessage};
-use crate::gui::top::top_navigation::{TopNavigation, TopNavigationMessage};
-use crate::gui::content::sys_info::{SysInfo, SysInfoMessage};
 
 
 pub struct ApplicationGui {
     top_navigation: TopNavigation,
     left_navigation: LeftNavigation,
-    sys_info:SysInfo,
-    
+
+
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum Message {
     TopNavigationMsg(TopNavigationMessage),
     LeftNavigationMsg(LeftNavigationMessage),
-    SysInfoMsg(SysInfoMessage)
+    Tick
+
 }
 
 impl ApplicationGui {
@@ -25,37 +27,34 @@ impl ApplicationGui {
         ApplicationGui { 
             top_navigation:TopNavigation::new(),
             left_navigation: LeftNavigation::new(),
-            sys_info:SysInfo::new(),
+
         }
     }
+    pub fn subscription(&self) -> Subscription<Message> {
+        iced::time::every(Duration::from_secs(15)).map(|_| {Message::Tick})
+        // iced::keyboard
+        // iced::mouse
+        // iced::
+    }
 
-    pub fn update(&mut self, message: Message) {
+    pub fn update(&mut self, message: Message) ->Task<Message> {
         match message {
             Message::TopNavigationMsg(msg)=>{
-                self.top_navigation.update(msg)
+                self.top_navigation.update(msg).map(Message::TopNavigationMsg)
             }
             Message::LeftNavigationMsg(msg)=>{
-                self.left_navigation.update(msg)
+                self.left_navigation.update(msg).map(Message::LeftNavigationMsg)
             }
-            Message::SysInfoMsg(msg)=>{
-                self.sys_info.update(msg)
-            }   
+      
+            Message::Tick =>{
+                println!("tick");
+                Task::none()
+            }
         }
     }
 
     pub fn view(&self) -> Element<'_, Message> {
         
-        let content = container(
-            match self.left_navigation.current_page { 
-                0 => self.sys_info.view().map(Message::SysInfoMsg),
-                _=>         container(text("2")).into()
-            }
-        )
-            .center_x(Length::Fill)
-            .center_y(Length::Fill)
-            .width(Length::Fill)
-            .height(Length::Fill);
-        ;
         
         container(column![
             row![
@@ -65,7 +64,7 @@ impl ApplicationGui {
             rule::Rule::horizontal(5),
             row![
                 column![
-                    self.left_navigation.view().map(Message::LeftNavigationMsg),
+                    // self.left_navigation.view().map(Message::LeftNavigationMsg),
                  
                 ].width(Length::Fixed(200.0)),
                 Space::with_width(Length::Fixed(5.0)),
@@ -74,7 +73,7 @@ impl ApplicationGui {
                 // Space::with_height(Length::Fill),
                 column![
                     
-                    content,
+            
 
                 ].width(Length::Fill).padding(5),
             ].padding(5),

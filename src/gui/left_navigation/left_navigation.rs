@@ -1,5 +1,5 @@
 use iced::widget::{column, container, row, text, button, pick_list};
-use iced::{Element,};
+use iced::{Element, Task};
 
 
 #[derive(Debug, Clone, Copy)]
@@ -23,10 +23,12 @@ impl LeftNavigation {
         }
     }
 
-    pub fn update(&mut self, message: LeftNavigationMessage) {
+    pub fn update(&mut self, message: LeftNavigationMessage) ->Task<LeftNavigationMessage>{
         match message {
             LeftNavigationMessage::PageChange(page) => {
                 self.current_page = page;
+                
+                Task::none()
             }
         }
     }
